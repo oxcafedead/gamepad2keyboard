@@ -1,0 +1,2 @@
+Main-Class: oxcafedead.g2k.Main
+Class-Path: lib/jinput-2.0.9.jar lib/jinput-2.0.9-natives-all.jar lib/de.ralleytn.plugins.jinput.xinput-1.1.0.jar lib/de.ralleytn.wrapper.microsoft.xinput-1.1.0.jar lib/jna-4.5.1.jar lib/jutils-1.0.0.jar

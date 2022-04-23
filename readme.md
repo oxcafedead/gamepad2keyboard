@@ -8,7 +8,7 @@ If you have java 17 installed:
 
 - [Download minimalistic (2MB) version](https://github.com/oxcafedead/gamepad2keyboard/releases/download/v0.0.1/gamepad2keyboard-0.0.1-nojava.zip)
 
-If you don't have java 17installed:
+If you don't have java 17 installed:
 
 - [Download standalone (35MB) version](https://github.com/oxcafedead/gamepad2keyboard/releases/download/v0.0.1/gamepad2keyboard-0.0.1.zip)
 

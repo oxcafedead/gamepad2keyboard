@@ -70,7 +70,9 @@ public class Main {
 					return;
 				}
 
-				if (Math.abs(event.getValue()) < 0.1f) {
+				var identifier = event.getComponent().getIdentifier();
+				var isPov = identifier.equals(Component.Identifier.Axis.POV);
+				if (isPov && Math.abs(event.getValue()) == 0 || !isPov && Math.abs(event.getValue()) < .8f) {
 					debug("reacting: release " + KeyEvent.getKeyText(key));
 					robot.keyRelease(key);
 				}

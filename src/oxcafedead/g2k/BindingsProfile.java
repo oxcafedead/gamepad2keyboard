@@ -73,7 +73,7 @@ public class BindingsProfile {
 		var identifier = e.getComponent().getIdentifier();
 
 		if (!e.getComponent().isAnalog()) {
-			if (identifier.equals(Component.Identifier.Axis.POV)) {
+			if (identifier.equals(Component.Identifier.Axis.POV) && e.getValue() == 0) {
 				return getCodes("pov");
 			}
 			return List.of();

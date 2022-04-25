@@ -78,7 +78,7 @@ public class ConfigWindow {
 		draw(framePanel);
 		frame.add(framePanel);
 
-		//Util.loadAppIcon().ifPresent(frame::setIconImage);
+		frame.setIconImage(Main.icon());
 
 		GraphicsConfiguration graphicsConfiguration =
 				GraphicsEnvironment.getLocalGraphicsEnvironment()

@@ -4,11 +4,13 @@ import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsEnvironment;
+import java.net.MalformedURLException;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Locale;
 
 import javax.swing.Box;
-import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -61,6 +63,9 @@ public class SelectControllerWindow {
 				GraphicsEnvironment.getLocalGraphicsEnvironment()
 						.getDefaultScreenDevice()
 						.getDefaultConfiguration();
+
+		frame.setIconImage(Main.icon());
+
 		frame.setVisible(true);
 		frame.setResizable(false);
 		frame.setSize(500, 100);

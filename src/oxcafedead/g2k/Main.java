@@ -1,12 +1,16 @@
 package oxcafedead.g2k;
 
 import java.awt.AWTException;
+import java.awt.Image;
 import java.awt.Robot;
 import java.awt.event.KeyEvent;
+import java.net.MalformedURLException;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.Executors;
 
+import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
 import net.java.games.input.Component;
@@ -97,4 +101,14 @@ public class Main {
 	static void info(String info) {
 		System.out.println("[INFO]\t" + info);
 	}
+
+	static Image icon() {
+		try {
+			return new ImageIcon(Path.of("icon.png").toUri().toURL()).getImage();
+		}
+		catch (MalformedURLException e) {
+			throw new IllegalStateException("no icon");
+		}
+	}
+
 }

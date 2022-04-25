@@ -6,3 +6,8 @@ cp -r ..\lib lib
 cp ..\icon.png icon.png
 cp ..\default.g2k default.g2k
 echo java -Djava.library.path=lib -jar g2k.jar >> startup.bat
+
+launch4jc.exe ..\exe-conf.xml
+
+7z a -tzip gamepad2keyboard.zip jre lib app.exe default.g2k g2k.jar icon.png
+7z a -tzip gamepad2keyboard-nojava.zip lib default.g2k g2k.jar icon.png startup.bat

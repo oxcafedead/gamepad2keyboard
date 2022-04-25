@@ -1,4 +1,5 @@
 # gamepad 2 keyboard
+🎮 -> ⌨ \
 input converter to allow to play games which don't support gamepads such as old PC games, or online flash/html5 games.
 
 ![](doc/img.png)

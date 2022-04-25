@@ -15,8 +15,11 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.AbstractButton;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -25,6 +28,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -37,8 +41,10 @@ public class ConfigWindow {
 	private final JFrame frame;
 	private BindingsProfile bindingsProfile = null;
 
-	volatile int selectedWinCode = -1;
-	volatile boolean inWinCodeBindingProcess = false;
+	AtomicInteger selectedWinCode = new AtomicInteger(-1);
+	AtomicBoolean inWinCodeBindingProcess = new AtomicBoolean(false);
+	AtomicInteger analogSensitivity = new AtomicInteger(60);
+
 
 	KeyAdapter listener = new KeyAdapter() {
 		@Override
@@ -48,7 +54,7 @@ public class ConfigWindow {
 				return;
 			}
 			Main.debug("key pressed " + e);
-			selectedWinCode = e.getKeyCode();
+			selectedWinCode.set(e.getKeyCode());
 		}
 	};
 
@@ -96,7 +102,7 @@ public class ConfigWindow {
 
 		var loadBtn = new JButton("Load");
 		var nameFld = new JTextField(bindingsProfile == null ? "default" : bindingsProfile.getName());
-		nameFld.setPreferredSize(new Dimension(100, 20));
+		nameFld.setPreferredSize(new Dimension(100, 21));
 		if (bindingsProfile == null) loadProfile(framePanel, persiter, nameFld, false);
 		loadBtn.addActionListener(a -> {
 			loadProfile(framePanel, persiter, nameFld, true);
@@ -171,13 +177,13 @@ public class ConfigWindow {
 			});
 			winCodeBtn.addKeyListener(listener);
 			winCodeBtn.addActionListener(e -> {
-				if (inWinCodeBindingProcess) {
+				if (inWinCodeBindingProcess.get()) {
 					return;
 				}
-				inWinCodeBindingProcess = true;
+				inWinCodeBindingProcess.set(true);
 				Executors.newSingleThreadExecutor().submit(() -> {
 					Main.debug("searching for a new code");
-					while (this.selectedWinCode == -1) {
+					while (this.selectedWinCode.get() == -1) {
 						try {
 							Thread.sleep(100);
 						}
@@ -186,11 +192,11 @@ public class ConfigWindow {
 							return;
 						}
 					}
-					var winCode = this.selectedWinCode;
+					var winCode = this.selectedWinCode.get();
 					Main.debug("new code: winCode" + winCode + ", " + KeyEvent.getKeyText(winCode));
 					bindingsProfile.setMapping(gamepadCodeBtn.getName(), winCode);
-					this.selectedWinCode = -1;
-					inWinCodeBindingProcess = false;
+					this.selectedWinCode.set(-1);
+					inWinCodeBindingProcess.set(false);
 					refresh(framePanel);
 				});
 			});
@@ -208,7 +214,12 @@ public class ConfigWindow {
 		framePanel.add(scrollPane);
 
 
-		JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		JPanel actionsPanel = new JPanel();
+		actionsPanel.add(Box.createHorizontalStrut(5));
+		var actionLayout = new BoxLayout(actionsPanel, BoxLayout.X_AXIS);
+		actionsPanel.setAlignmentY(.5f);
+		actionsPanel.setLayout(actionLayout);
+		actionsPanel.setMinimumSize(new Dimension(200, 50));
 		var newBtn = new JButton("New Binding");
 		newBtn.addActionListener(a -> {
 			Executors.newSingleThreadExecutor().submit(() -> {
@@ -225,7 +236,21 @@ public class ConfigWindow {
 			refresh(framePanel);
 		});
 		actionsPanel.add(remBtn);
+		actionsPanel.add(Box.createHorizontalStrut(5));
 		actionsPanel.add(newBtn);
+		actionsPanel.add(Box.createHorizontalGlue());
+		actionsPanel.add(new JLabel("Analog sensitivity"));
+		var analogSensitivitySlider = new JSlider();
+		analogSensitivitySlider.setValue(bindingsProfile.analogSensitivity());
+		actionsPanel.add(analogSensitivitySlider);
+		analogSensitivitySlider.setPreferredSize(new Dimension(50, 8));
+		analogSensitivitySlider.setMinimum(1);
+		analogSensitivitySlider.addChangeListener(l -> {
+			var sensitivity = analogSensitivitySlider.getValue();
+			Main.debug("Changing sesitivity to " + sensitivity + ", float = " + sensitivity / 100f);
+			bindingsProfile.setAnalogSensitivity(sensitivity);
+		});
+		actionsPanel.add(Box.createHorizontalStrut(5));
 		framePanel.add(actionsPanel);
 	}
 

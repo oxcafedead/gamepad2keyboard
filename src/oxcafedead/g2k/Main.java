@@ -62,9 +62,10 @@ public class Main {
 			}
 
 			var event = Util.nextEvent();
-			Collection<Integer> keys = configWindow.bindingsProfile().getCodes(event);
+			var bindingsProfile = configWindow.bindingsProfile();
+			Collection<Integer> keys = bindingsProfile.getCodes(event);
 			keys.forEach(key -> {
-				configWindow.bindingsProfile().getCodesToRelease(event).forEach(robot::keyRelease);
+				bindingsProfile.getCodesToRelease(event).forEach(robot::keyRelease);
 
 				if (key == -1) {
 					return;
@@ -72,13 +73,16 @@ public class Main {
 
 				var identifier = event.getComponent().getIdentifier();
 				var isPov = identifier.equals(Component.Identifier.Axis.POV);
-				if (isPov && Math.abs(event.getValue()) == 0 || !isPov && Math.abs(event.getValue()) < .8f) {
+				if (isPov && Math.abs(event.getValue()) == 0
+						|| !isPov && Math.abs(event.getValue()) < bindingsProfile.analogSensitivity() / 100f) {
 					debug("reacting: release " + KeyEvent.getKeyText(key));
 					robot.keyRelease(key);
 				}
 				else {
-					debug("reacting: pressing " + KeyEvent.getKeyText(key));
-					robot.keyPress(key);
+					if (!event.getComponent().isAnalog() || Math.abs(event.getValue()) >= bindingsProfile.analogSensitivity() / 100f) {
+						debug("reacting: pressing " + KeyEvent.getKeyText(key));
+						robot.keyPress(key);
+					}
 				}
 			});
 		}

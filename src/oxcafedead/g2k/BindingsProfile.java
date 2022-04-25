@@ -2,7 +2,6 @@ package oxcafedead.g2k;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,12 +13,16 @@ import net.java.games.input.Event;
 
 public class BindingsProfile {
 
+	static int DEFAULT_ANALOG_SENSITIVITY = 80;
+
 	private String name;
+	private int analogSensitivity;
 	private final Map<String, Integer> mappings;
 
 	public BindingsProfile(String name) {
 		this.name = name;
 		mappings = new HashMap<>();
+		analogSensitivity = DEFAULT_ANALOG_SENSITIVITY;
 	}
 
 	public void setName(String name) {
@@ -164,5 +167,16 @@ public class BindingsProfile {
 			return identifier.getName() + "/" + e.getValue();
 		}
 		return identifier.getName();
+	}
+
+	public int analogSensitivity() {
+		return analogSensitivity;
+	}
+
+	public void setAnalogSensitivity(int sensitivity) {
+		if (analogSensitivity > 100 || analogSensitivity < 1) {
+			throw new IllegalArgumentException();
+		}
+		analogSensitivity = sensitivity;
 	}
 }

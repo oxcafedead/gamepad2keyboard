@@ -3,7 +3,7 @@
   <dontWrapJar>true</dontWrapJar>
   <headerType>gui</headerType>
   <jar>g2k.jar</jar>
-  <outfile>C:\Project\gamepad2keyboard\build\app.exe</outfile>
+  <outfile>build\app.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>
@@ -26,7 +26,6 @@
   </jre>
   <messages>
     <startupErr>An error occurred while starting the application.</startupErr>
-    <bundledJreErr>This application requires a Java Runtime Environment.</bundledJreErr>
     <jreVersionErr>This application requires a Java Runtime Environment</jreVersionErr>
     <launcherErr>The registry refers to a nonexistent Java Runtime Environment installation or the runtime is corrupted.</launcherErr>
     <instanceAlreadyExistsMsg>An application instance is already running.</instanceAlreadyExistsMsg>

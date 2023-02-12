@@ -7,11 +7,11 @@ input converter to allow to play games which don't support gamepads such as old 
 # download
 If you have java 17 installed:
 
-- [Download minimalistic (2MB) version](https://github.com/oxcafedead/gamepad2keyboard/releases/download/v0.0.3/gamepad2keyboard-0.0.3-nojava.zip)
+- [Download minimalistic (2MB) version](https://github.com/oxcafedead/gamepad2keyboard/releases/download/v0.0.3/gamepad2keyboard-nojava.zip)
 
 If you don't have java 17 installed:
 
-- [Download standalone (35MB) version](https://github.com/oxcafedead/gamepad2keyboard/releases/download/v0.0.3/gamepad2keyboard-0.0.3.zip)
+- [Download standalone (35MB) version](https://github.com/oxcafedead/gamepad2keyboard/releases/download/v0.0.3/gamepad2keyboard.zip)
 
 # notice
 This code was not intended to be public, it's awful and messy, I hope someday I will clean it up. I decided to publish this tool for other people who might want to use their gamepads to play some simple online games as nothing worked for me (from tools I used) - they were too complicated or just did not work.

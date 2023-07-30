@@ -10,7 +10,7 @@ use enigo::{keycodes, Enigo};
 
 // TODO: save/load
 // TODO: delete row(s)
-
+#[derive(Debug)]
 enum Message {
     UpdateValue(gilrs::EventType),
 }
@@ -59,6 +59,8 @@ fn listen_for_gamepad_events() -> ! {
 
     let mut enigo = Enigo::new();
 
+    let mut requested_gpkey = false;
+
     loop {
         // Examine new events
         while let Some(Event { id, event, time }) = gilrs.next_event() {
@@ -67,15 +69,29 @@ fn listen_for_gamepad_events() -> ! {
             unsafe {
                 if let Some(sender) = &NEW_GAMEPAD_KEY_SENDER {
                     if let Some(receiver) = &NEW_GAMEPAD_KEY_RECEIVER {
-                        receiver.try_recv();
-                        println!("sending new binding");
-                        if let Err(_) = sender.try_send(Message::UpdateValue(event)) {
-                            panic!("error when trying to record a new gamepad button");
+                        if let Ok(message) = receiver.try_recv() {
+                            match message {
+                                Message::UpdateValue(new_value) => {
+                                    if let gilrs::EventType::Connected = new_value {
+                                        println!("requested_gpkey = true;");
+                                        requested_gpkey = true;
+                                    } else {
+                                        dbg!("re-sending new binding to gui thread");
+                                        sender.try_send(message);
+                                    }
+                                }
+                            }
+                        }
+                        if requested_gpkey {
+                            println!("sending new binding");
+                            sender.try_send(Message::UpdateValue(event));
+                            requested_gpkey = false;
                         }
                     }
                 }
                 if let Some(receiver) = &MAPPINGS_RECEIVER {
                     if let Ok(mappings) = receiver.try_recv() {
+                        println!("&MAPPINGS_RECEIVER");
                         active_mappings = Some(mappings);
                     }
                 }
@@ -159,7 +175,15 @@ fn matches_mapping(
                     }
                     match mapping.gamepad_button.unwrap().0 {
                         gilrs::EventType::AxisChanged(map_axis, map_val, _) => {
-                            if axis == map_axis && map_val.signum() != val.signum() {
+                            if axis == map_axis && val.abs() < SENSIVITY {
+                                vec.insert(
+                                    0,
+                                    (
+                                        mapping_to_event_type(&mapping.keyboard_button.unwrap()),
+                                        false,
+                                    ),
+                                );
+                            } else if axis == map_axis && map_val.signum() != val.signum() {
                                 vec.insert(
                                     0,
                                     (
@@ -261,11 +285,12 @@ fn get_inverted_mapping(
 
 struct MyApp {
     changing_gamepad_button: Option<usize>,
+    changing_gamepad_button_started: Option<bool>,
     changing_keyboard_button: Option<usize>,
     gamepad_button_mappings: Vec<GamepadButtonMapping>,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 struct GamepadButtonMapping {
     gamepad_button: Option<GamepadButtonWrapper>,
     keyboard_button: Option<KeyboardButtonWrapper>,
@@ -275,6 +300,7 @@ impl Default for MyApp {
     fn default() -> Self {
         Self {
             changing_gamepad_button: None,
+            changing_gamepad_button_started: None,
             changing_keyboard_button: None,
             gamepad_button_mappings: Vec::new(),
         }
@@ -445,6 +471,7 @@ impl eframe::App for MyApp {
                             .clicked()
                         {
                             self.changing_gamepad_button = Some(i);
+                            self.changing_gamepad_button_started = Some(true);
                             self.changing_keyboard_button = None;
                         };
                         ui.label("->");
@@ -508,6 +535,7 @@ impl eframe::App for MyApp {
                             {
                                 self.changing_keyboard_button = Some(i);
                                 self.changing_gamepad_button = None;
+                                self.changing_gamepad_button_started = None;
                             };
                         }
                         i += 1;
@@ -548,16 +576,28 @@ impl eframe::App for MyApp {
             if self.changing_gamepad_button.is_some() {
                 let mut value: Option<gilrs::EventType> = None;
                 unsafe {
-                    if let Some(receiver) = &NEW_GAMEPAD_KEY_RECEIVER {
-                        if let Ok(message) = receiver.try_recv() {
-                            match message {
-                                Message::UpdateValue(new_value) => {
-                                    value = match new_value {
-                                        gilrs::EventType::AxisChanged(_, _, _)
-                                        | gilrs::EventType::ButtonPressed(..)
-                                        | gilrs::EventType::ButtonChanged(..)
-                                        | gilrs::EventType::ButtonReleased(..) => Some(new_value),
-                                        _ => None,
+                    if let Some(sender) = &NEW_GAMEPAD_KEY_SENDER {
+                        if self.changing_gamepad_button_started.is_some() {
+                            dbg!("changing_gamepad_button_started.is_some");
+                            sender.try_send(Message::UpdateValue(gilrs::EventType::Connected));
+                            self.changing_gamepad_button_started = None;
+                        } else if let Some(receiver) = &NEW_GAMEPAD_KEY_RECEIVER {
+                            if let Ok(message) = receiver.try_recv() {
+                                dbg!("received {}", &message);
+                                match message {
+                                    Message::UpdateValue(new_value) => {
+                                        if let gilrs::EventType::Connected = new_value {
+                                            sender.try_send(message);
+                                        }
+                                        value = match new_value {
+                                            gilrs::EventType::AxisChanged(_, _, _)
+                                            | gilrs::EventType::ButtonPressed(..)
+                                            | gilrs::EventType::ButtonChanged(..)
+                                            | gilrs::EventType::ButtonReleased(..) => {
+                                                Some(new_value)
+                                            }
+                                            _ => None,
+                                        }
                                     }
                                 }
                             }
